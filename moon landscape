@@ -1,0 +1,58 @@
+import * as THREE from 'three';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+
+// 画面サイズ
+const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+};
+
+// キャンバスを作成
+const canvas = document.createElement('canvas');
+document.body.appendChild(canvas);
+
+// シーンを作成
+const scene = new THREE.Scene();
+
+// .exrファイルを読み込み、背景に設定
+new EXRLoader().load('./starmap_random_2020_4k.exr', (texture) => {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.background = texture;
+});
+
+// カメラ
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100000);
+camera.position.set(900, 1100, 1800);
+
+// コントロール
+const controls = new MapControls(camera, canvas);
+controls.enableDamping = true;
+controls.maxDistance = 4000;
+
+// レンダー
+const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    alpha: true,
+});
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+// レンダリング
+const animate = () => {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+};
+animate();
+
+// 画面リサイズ時にキャンバスもリサイズ
+window.addEventListener(
+    'resize',
+    () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    },
+    false,
+);
